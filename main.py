@@ -34,19 +34,6 @@ async def favicon():
     return FileResponse("tmp/logo.png")
 
 
-son_app = FastAPI()
 
-
-@son_app.get("/")  # /son/
-async def root():
-    return {"message": "I'm the son app!"}
-
-
-@son_app.get("/info")  # /son/info
-async def info():
-    return {"message": "I'm the son app info!"}
-
-
-app.mount("/son", son_app, name="son")
 
 
