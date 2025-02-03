@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1 id="num"></h1>
+    <script>
+      /* 
+        通过定时器，可以让代码在制定时间后执行
+            -定时器有两种：
+                setTimeout()
+                    -参数：
+                    1.回调函数（需要执行的代码）
+                    2.间隔时间（毫秒）
+                    -关闭定时器：
+                    clearTimeout()
+                setInterval()  每隔一段时间代码就执行一次
+                    -参数
+                    1.回调函数（需要执行的代码）
+                    2.间隔时间（毫秒）
+                    -关闭定时器：
+                    clearInterval()  
+        
+        
+        */
+      const timer = setTimeout(() => {
+        alert("我是定时器中的代码");
+      }, 3000);
+      clearTimeout(timer);
+      const timer1 = setInterval(() => {
+        console.log("我是定时器中的代码");
+      }, 3000);
+      clearInterval(timer1);
+      let num = 0;
+      const numH1 = document.getElementById("num");
+      const h1Timer = setInterval(() => {
+        num++;
+        numH1.textContent = num;
+        if (num === 200) {
+          clearInterval(h1Timer);
+        }
+      }, 1000);
+    </script>
+  </body>
+</html>
