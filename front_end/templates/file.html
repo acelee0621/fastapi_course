@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Downloading Page</h1>
+    <article>
+        <header></header>
+        <section>
+            <div>
+                <h3>File for Download</h3>
+                <h4>{{file_name}}</h4>
+                <form action="{{url_for('download_file',unique_name=unique_name)}}" method="post">
+                    <label for="share">Share Code
+                    <input type="text" name="share" value="{{share_code}}">
+                </label>
+                <button type="submit">Download</button>
+                </form>
+            </div>
+        </section>
+    </article>
+</body>
+</html>

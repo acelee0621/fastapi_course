@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Templates</title>
+</head>
+<body>
+    <h1>All Files Share Page</h1>
+    <article>
+        <header></header>
+        <section>
+        <ul>
+            {% for file in all_files %}
+            <li>
+                <div>File Name: {{file.file_name}}</div>
+                <div>Share URL: <a href="{{url_for("file_page",unique_name=file.unique_name)}}">{{file.unique_name}}</a></div>
+                <div>Share Code: <a href="{{url_for("file_page",unique_name=file.unique_name)}}?share_code={{file.code}}">{{file.code}}</a> </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    </article>
+</body>
+</html>
