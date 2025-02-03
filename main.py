@@ -1,18 +1,17 @@
 import sys
 
-from fastapi import FastAPI, status, Response
-from fastapi import __version__ as fastapi_version
+from fastapi import FastAPI, status, Response, __version__ as fastapi_version
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-
-
+from config import config
 
 app = FastAPI(
     # docs_url=None,
-    # redoc_url=None
+    # redoc_url=None,
+    debug=config.DEBUG_MODE,
 )
-app.mount("/sub", StaticFiles(directory="static"), name="static")
+app.mount(config.STATIC_URL, StaticFiles(directory=config.STATIC_DIR), name=config.STATIC_NAME)
 
 
 @app.get("/server-status", include_in_schema=False)
@@ -32,8 +31,3 @@ async def run_state(response: Response, token: str | None = None):
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     return FileResponse("tmp/logo.png")
-
-
-
-
-
