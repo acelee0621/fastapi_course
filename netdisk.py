@@ -1,7 +1,11 @@
 from fastapi import (
     APIRouter,
+    Cookie,
+    Depends,
+    HTTPException,
     Query,
     Request,
+    Response,
     status,
     UploadFile,
     Form,
@@ -12,15 +16,22 @@ from utils import unique_generator, save_files, UPLOAD_DIR
 from FakeDB import file_db
 
 
-
 router = APIRouter(prefix="/netdisk", tags=["NetDisk"])
 
 
-
+def check_user(netdisk_token: str | None = Cookie(default=None)):
+    print(netdisk_token)
+    if netdisk_token != "Ace":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="You have no authorization"
+        )
+    return netdisk_token
 
 
 @router.post("/upload_file", summary="Upload a file")
-async def upload_file(*, file: UploadFile, request: Request):
+async def upload_file(
+    *, file: UploadFile, request: Request, token: str = Depends(check_user)
+):
     # 保存文件
     unique_name = await save_files(file)
     # 将文件信息保存到数据库
@@ -84,3 +95,9 @@ async def download_file(unique_name: str, share: str = Form()):
     return FileResponse(
         file_path, media_type="application/octet-stream", filename=file_name
     )
+
+
+@router.get("/set-cookie", summary="Set Cookie")
+async def set_cookies(response: Response):
+    response.set_cookie(key="netdisk_token", value="Ace",expires=60)
+    return {"message": "Cookie Set"}
