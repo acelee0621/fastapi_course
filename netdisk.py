@@ -16,6 +16,7 @@ from fastapi.security import SecurityScopes
 
 from utils import unique_generator, save_files, UPLOAD_DIR
 from FakeDB import file_db
+from auth import create_user_token, get_user_token
 
 
 router = APIRouter(prefix="/netdisk", tags=["NetDisk"])
@@ -34,7 +35,16 @@ ROLE_PERMISSIONS = {
 }
 
 
-def get_user_token(user_name: str | None = Cookie(default=None)):
+# def get_user_token(user_name: str | None = Cookie(default=None)):
+#     if user_name is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED, detail="user_name is required"
+#         )
+#     return user_name
+
+
+def get_username(token=Depends(get_user_token)):
+    user_name = token["username"]
     if user_name is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="user_name is required"
@@ -52,7 +62,7 @@ def get_role_permissions(role_name: list[str]):
 
 
 # 获取用户所有的scopes,也就是获取角色对应的所有权限
-def get_user_permissions(token: str = Depends(get_user_token)):
+def get_user_permissions(token: str = Depends(get_username)):
     if token in ALL_USERS:
         return get_role_permissions(ALL_USERS[token])
     return None
@@ -164,3 +174,15 @@ async def download_file(unique_name: str, share: str = Form()):
 async def set_cookies(response: Response):
     response.set_cookie(key="netdisk_token", value="Ace_admin", expires=60)
     return {"message": "Cookie Set"}
+
+
+@router.get("/send_token")
+async def send_token(request: Request):
+    data = {"username": "jack"}
+    token = create_user_token(data)
+    return token
+
+
+@router.get("/get_token")
+async def get_token(data=Depends(get_user_token)):
+    return data

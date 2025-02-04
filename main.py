@@ -2,6 +2,7 @@ import sys
 
 from fastapi import (
     FastAPI,
+    Request,
     status,
     Response,
     __version__ as fastapi_version,
@@ -13,6 +14,7 @@ from fastapi.templating import Jinja2Templates
 
 from config import config
 from router import routers
+from middleware import ace_middleware
 
 
 app = FastAPI(
@@ -20,6 +22,24 @@ app = FastAPI(
     # redoc_url=None,
     debug=config.DEBUG_MODE,
 )
+
+
+ace_middleware(app)
+
+
+@app.middleware("http")
+async def only_for_requests(request:Request, call_next):
+    print(f"Request URL:{request.url}")
+    response = await call_next(request)
+    return response
+
+@app.middleware("http")
+async def only_for_responses(request:Request, call_next):    
+    response = await call_next(request)
+    print("Got response" + response.headers['content-type'])
+    return response
+
+
 
 app.include_router(routers)
 
