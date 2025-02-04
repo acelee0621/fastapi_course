@@ -1,16 +1,19 @@
-from fastapi import APIRouter,Security
-from fastapi.security import SecurityScopes
+from time import sleep
+from fastapi import APIRouter, Request
+
 
 
 
 router = APIRouter()
 
 
-def print_scopes(security_scopes: SecurityScopes):
-    print(security_scopes.scopes)
+@router.get("/redis")
+async def redis_set(request: Request):
+    value = await request.app.state.redis.get("fastapi_redis")
     
-    
-    
-@router.get("/group/admin",dependencies=[Security(print_scopes, scopes=["admin"])])
-async def get_admin():
-    pass
+    if value is None:
+        sleep(5)
+        hi = "hey, redis!"
+        await request.app.state.redis.set("fastapi_redis", hi, ex=60)
+        return hi
+    return value
