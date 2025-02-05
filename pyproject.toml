@@ -8,4 +8,5 @@ dependencies = [
     "fastapi[all]>=0.115.8",
     "pyjwt>=2.10.1",
     "redis>=5.2.1",
+    "sqlalchemy>=2.0.37",
 ]
