@@ -19,6 +19,7 @@ from middleware import ace_middleware
 from database.redis import redis_connect
 
 
+
 @asynccontextmanager
 async def ace_lifespan(app: FastAPI):
     # 启动时执行
@@ -69,6 +70,7 @@ app = FastAPI(
 
 
 app.include_router(routers)
+
 
 app.mount(
     config.STATIC_URL, StaticFiles(directory=config.STATIC_DIR), name=config.STATIC_NAME

@@ -1,0 +1,25 @@
+from typing import Optional
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
+from datetime import datetime, timezone
+
+
+# 基础类
+class Base(DeclarativeBase):
+    pass
+
+
+class Account(Base):
+    __tablename__ = "account"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(
+        String(64), index=True, unique=True, nullable=False
+    )
+    password_hash: Mapped[Optional[str]] = mapped_column(String(256))
+    created_time: Mapped[datetime] = mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_time: Mapped[datetime] = mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc)
+    )
