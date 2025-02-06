@@ -9,6 +9,7 @@ dependencies = [
     "argon2-cffi>=23.1.0",
     "fastapi-mail>=1.4.2",
     "fastapi[all]>=0.115.8",
+    "itsdangerous>=2.2.0",
     "passlib>=1.7.4",
     "psutil>=6.1.1",
     "pyjwt>=2.10.1",

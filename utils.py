@@ -3,8 +3,8 @@ import hashlib
 import uuid
 
 
-
 UPLOAD_DIR = "upload_files"
+
 
 # 生成唯一命名
 def unique_generator(*, length: int = 8):
@@ -25,4 +25,3 @@ async def save_files(file):
     with open(file_path, "wb") as f:
         f.write(res)
     return unique_name
-

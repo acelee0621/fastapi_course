@@ -2,14 +2,14 @@ from typing import Annotated
 from datetime import datetime, timedelta, timezone
 import jwt
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status, Depends
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
 from account.schema import UserCreate, UserOut, Token, UserInDB
 from account.models import Account
 from database.db import SessionDep
-
+import service
 
 
 router = APIRouter()
@@ -19,6 +19,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+
 
 def get_password_hash(password):
     return pwd_context.hash(password)
@@ -34,9 +35,12 @@ async def get_user(db: SessionDep, username: str) -> UserInDB | None:
         return UserInDB.model_validate(user)
     return None
 
+
 async def authenticate_user(db: SessionDep, username: str, password: str):
     user = await get_user(db, username)
     if not user:
+        return False
+    if user.status != 1:
         return False
     if not verify_password(password, user.password_hash):
         return False
@@ -50,16 +54,20 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, SECRET_KEY, algorithm=ALGORITHM
-    )
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+
 @router.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-async def signup(user: UserCreate, db: SessionDep) -> UserOut:
+async def signup(
+    user: UserCreate,
+    db: SessionDep,
+    request: Request,
+    background_tasks: BackgroundTasks,
+) -> UserOut:
     # 创建新用户对象
     new_user = Account(
-        username=user.username,        
+        username=user.username,
         password_hash=get_password_hash(user.password),  # 加密密码
     )
 
@@ -68,6 +76,11 @@ async def signup(user: UserCreate, db: SessionDep) -> UserOut:
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user)  # 刷新以获取完整对象（如自增 ID）
+        verification_link = await service.generate_link(new_user.email)
+        link = request.url_for("verify_email_link", token=verification_link)
+        background_tasks.add_task(
+            service.send_verification_email, email=new_user.email, link=str(link)
+        )
     except IntegrityError:
         # 处理用户名或邮箱的唯一性冲突
         await db.rollback()
@@ -77,7 +90,6 @@ async def signup(user: UserCreate, db: SessionDep) -> UserOut:
         )
 
     return UserOut.model_validate(new_user)  # 返回新创建的用户对象
-
 
 
 @router.post("/token", response_model=Token)

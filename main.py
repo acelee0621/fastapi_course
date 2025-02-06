@@ -19,7 +19,6 @@ from middleware import ace_middleware
 from database.redis import redis_connect
 
 
-
 @asynccontextmanager
 async def ace_lifespan(app: FastAPI):
     # 启动时执行
@@ -40,9 +39,7 @@ async def ace_lifespan(app: FastAPI):
     # service_close() 关闭第三方服务
     # send_email()  发送邮件
     print("FastAPI is stopping...")
-    
-    
-    
+
 
 app = FastAPI(
     # docs_url=None,
@@ -62,11 +59,10 @@ app = FastAPI(
 #     return response
 
 # @app.middleware("http")
-# async def only_for_responses(request:Request, call_next):    
+# async def only_for_responses(request:Request, call_next):
 #     response = await call_next(request)
 #     print("Got response" , response)
 #     return response
-
 
 
 app.include_router(routers)

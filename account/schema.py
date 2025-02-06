@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+import email
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
 
@@ -14,7 +15,8 @@ class TokenData(BaseModel):
 
 
 class User(BaseModel):
-    username: str    
+    username: str
+    email: EmailStr    
     
 
 
@@ -27,7 +29,8 @@ class UserInDB(User):
 
 
 class UserCreate(BaseModel):
-    username: str    
+    username: str 
+    email:EmailStr  
     password: str
 
 

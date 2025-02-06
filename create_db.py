@@ -1,5 +1,5 @@
 from database.db import engine
-from account.models import Base,Account
+from account.models import Base, Account
 import asyncio
 
 print("Creating database ....")

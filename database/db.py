@@ -14,6 +14,7 @@ engine = create_async_engine(
 
 SessionLocal = sessionmaker(class_=AsyncSession, expire_on_commit=False, bind=engine)
 
+
 # 异步会话依赖
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as session:
@@ -22,5 +23,3 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 # 使用 Annotated 标注会话依赖
 SessionDep = Annotated[AsyncSession, Depends(get_db)]
-
-
