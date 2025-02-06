@@ -1,9 +1,10 @@
+import asyncio
 import time
 from time import sleep
 
-from fastapi import APIRouter, Request, BackgroundTasks, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel,EmailStr
-
+from fastapi import APIRouter, Request, BackgroundTasks, WebSocket, WebSocketDisconnect
+import psutil
 from fastapi_mail import FastMail, MessageSchema, MessageType, ConnectionConfig
 from config import config
 
@@ -83,7 +84,7 @@ connections_chat:list[WebSocket] = []
         
         
 # 简易聊天室
-@router.websocket("/ws3{name}")
+@router.websocket("/ws3/{name}")
 async def websocket_endpoint_chat(websocket: WebSocket, name: str):
     await websocket.accept()
     connections_chat.append(websocket)
@@ -99,3 +100,46 @@ async def websocket_endpoint_chat(websocket: WebSocket, name: str):
         connections_chat.remove(websocket)
         for client in connections_chat:
             await client.send_text(f"{name} left the chat room!")
+            
+            
+# CPU占用率实时显示
+clients: list[WebSocket] = []
+
+
+@router.websocket("/ws_cpu")
+async def websocket_endpoint_cpu(websocket: WebSocket):
+    await websocket.accept()
+    clients.append(websocket)
+    try:
+        while True:
+            data = psutil.cpu_percent(interval=1)
+            data = str(data)
+            for client in clients:
+                await client.send_text(data)
+                
+            await asyncio.sleep(2)
+            
+    except WebSocketDisconnect:
+        print(f"{websocket} disconnected")
+        clients.remove(websocket)
+
+
+@router.get("/chart")
+async def chart(request: Request):
+    return request.app.state.templates.TemplateResponse(request=request, name="chart.html")
+
+
+class WSManager:
+    def __init__(self):
+        self.connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.connections.append(websocket)
+        
+    async def broadcast(self, message: str):
+        for connection in self.connections:
+            await connection.send_text(message)
+            
+    async def disconnect(self, websocket: WebSocket):
+        self.connections.remove(websocket)

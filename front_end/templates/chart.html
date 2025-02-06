@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Websocket</title>
+    <script src="https://cdn.staticfile.net/echarts/4.3.0/echarts.min.js"></script>
+</head>
+
+<body>
+    <div id="main" style="width: 600px;height:400px;"></div>
+
+    <script>
+        myChart = echarts.init(document.getElementById('main'))
+    
+        time = [];
+        data = [];
+    
+        chartOption = {
+            title:{text:'CPU Usage'},
+            tooltip:{
+                trigger:'axis',
+                axisPointer:{
+                    type:'cross',
+                    label:{
+                        backgroundColor:'#6a7985'
+                    }
+                }
+                },
+            xAxis:{
+                type:'category',
+                data:time
+            },
+            yAxis:{type:'value'},
+            series:[{
+                name:'CPU Usage',
+                data:data,
+                type:'line'
+            }]
+        }
+    
+        myChart.setOption(chartOption)
+    
+        updateChart = (message) => {
+            let now = new Date();
+            let newTime = now.toTimeString().split(' ')[0];
+            time.push(newTime);
+            data.push(message);
+    
+            if (time.length > 10) {
+                time.shift();
+                data.shift();
+            }
+    
+            myChart.setOption({
+                xAxis: {
+                    data: time
+                },
+                series: [{
+                    data: data
+                }]
+            })
+        }
+            
+        
+        const wsServer = 'ws://127.0.0.1:8000/ws_cpu'
+        let ws = new WebSocket(wsServer)
+        //  onopen =  websocket.accept()
+        ws.onopen = () => {  
+            console.log('connected')
+        }
+        //  onmessage = websocket.receive_text()
+        ws.onmessage = (event) => {
+            updateChart(event.data)
+        }
+    </script>
+</body>
+
+
+</html>

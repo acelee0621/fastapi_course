@@ -10,6 +10,7 @@ dependencies = [
     "fastapi-mail>=1.4.2",
     "fastapi[all]>=0.115.8",
     "passlib>=1.7.4",
+    "psutil>=6.1.1",
     "pyjwt>=2.10.1",
     "redis>=5.2.1",
     "sqlalchemy>=2.0.37",
