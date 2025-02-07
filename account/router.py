@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 from account.schema import UserCreate, UserOut, Token, UserInDB
 from account.models import Account
 from database.db import SessionDep
-import service
+from account import service
 
 
 router = APIRouter()

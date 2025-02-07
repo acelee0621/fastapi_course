@@ -81,9 +81,32 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"{websocket} disconnected")
 
 
+# async 简易websocket服务
+# 异步生成器，负责接收消息
+async def receive_messages(websocket: WebSocket):
+    try:
+        while True:
+            data = await websocket.receive_text()  # 异步接收消息
+            yield data  # 将消息返回
+    except WebSocketDisconnect:
+        yield None  # 如果连接断开，返回 None
+
+@router.websocket("/ws")
+async def websocket_endpoint_async(websocket: WebSocket):
+    await websocket.accept()
+    
+    # 使用 async for 遍历接收到的消息
+    async for data in receive_messages(websocket):
+        if data is None:
+            break  # 如果数据是 None，表示连接断开，退出循环
+        # 处理消息（例如接入 LLM 等）
+        await websocket.send_text(f"Message text was: {data}")
+        
+    print(f"{websocket} disconnected")
+
+
+
 connections_chat: list[WebSocket] = []
-
-
 # 简易聊天室
 @router.websocket("/ws3/{name}")
 async def websocket_endpoint_chat(websocket: WebSocket, name: str):
@@ -101,6 +124,30 @@ async def websocket_endpoint_chat(websocket: WebSocket, name: str):
         connections_chat.remove(websocket)
         for client in connections_chat:
             await client.send_text(f"{name} left the chat room!")
+            
+            
+# async for 聊天室
+@router.websocket("/ws33/{name}")
+async def websocket_endpoint_chat_async(websocket: WebSocket, name: str):
+    await websocket.accept()
+    connections_chat.append(websocket)  # 将 websocket 加入连接池
+    await websocket.send_text(f"Hello {name}, welcome to the chat room!")
+
+    # 使用 async for 来异步遍历接收到的消息
+    async for data in receive_messages(websocket):
+        if data is None:
+            break  # 如果接收到 None，意味着连接断开，退出循环
+        
+        # 处理接收到的消息，并广播给其他所有连接
+        for client in connections_chat:
+            if client != websocket:  # 不广播给自己
+                await client.send_text(f"{name} said: {data}")
+    
+    # 连接断开后，从连接池中移除
+    connections_chat.remove(websocket)
+    # 向其他客户端发送该用户离开的消息
+    for client in connections_chat:
+        await client.send_text(f"{name} left the chat")
 
 
 # CPU占用率实时显示
