@@ -16,8 +16,9 @@ redis_pool = aioredis.ConnectionPool(
 async def redis_connect():
     try:
         redis_client = aioredis.Redis(connection_pool=redis_pool)
-        sig = await redis_client.ping()
-        print(sig)
+        is_connected = await redis_client.ping()
+        if is_connected:
+            print("redis连接成功")
         return redis_client
     except ConnectionError:
         print("redis连接失败")
