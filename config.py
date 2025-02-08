@@ -1,5 +1,5 @@
 from functools import lru_cache
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -15,9 +15,14 @@ class Settings(BaseSettings):
     MAIL_FROM: str
     MAIL_SERVER: str
 
-    class Config:
+    """ class Config:
         env_file = (".env", ".env.local")  # 后面的文件会覆盖前面的文件
+        # env_prefix = "FASTAPI_" """
+    
+    model_config = SettingsConfigDict(
+        env_file=(".env", ".env.local"),
         # env_prefix = "FASTAPI_"
+        )
 
 
 @lru_cache()
